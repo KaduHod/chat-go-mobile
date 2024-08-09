@@ -1,23 +1,44 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { SafeAreaView, StyleSheet, View } from "react-native";
 import { Botao } from "./Botao";
 import { InputTexto } from "./InputTexto";
+import { AuthContext } from "../App";
 
 export function Login({navigation}) {
-const [userName, setUserName] = useState('');
-const onPressLogin = async () => {
-    console.log("APERTOU LOGIN")
-}
-const onPressRegister = async () => {
-    console.log("APERTOU REGISTRAR")
-}
+    const [userName, setUserName] = useState('');
+    const {setAutenticado} = useContext(AuthContext)
+    const onPressLogin = async () => {
+        const config = {
+            method: "POST",
+            headers: {
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({apelido: userName})
+        }
+        const res = await fetch('http://192.168.0.76:3000/chat/api/usuario/login', config)
+        if(res.status != 200) {
+            const {status} = res
+            if(status == 404) {
+                console.log("Usuario de login "+userName+" nao econtrado")
+                return
+            }
+            console.error("Erro ao efetuar login")
+            return
+        }
+        const {usuario} = await res.json()
+        setAutenticado(true)
+        console.log("Aqui")
+    }
+    const onPressRegister = async () => {
+        navigation.navigate('Cadastro', {})
+    }
     return (
      <SafeAreaView>
         <View style={style.centro}>
             <InputTexto valor={userName} onChangeText={setUserName} title="Digite o nome de usuario"/>
             <View style={style.buttonContainer}>
                 <Botao title="Login" onPress={onPressLogin} />
-                <Botao title="Cadastro" onPress={() => navigation.navigate('Cadastro', {})} />
+                <Botao title="Cadastro" onPress={onPressRegister} />
             </View>
          </View>
      </SafeAreaView>
