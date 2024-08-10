@@ -1,12 +1,12 @@
 import { useContext, useState } from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import { SafeAreaView, StyleSheet, View, Text } from "react-native";
 import { Botao } from "./Botao";
 import { InputTexto } from "./InputTexto";
 import { AuthContext } from "../App";
 
-export function Login({navigation}) {
+export function Login({navigation}: any) {
     const [userName, setUserName] = useState('');
-    const {setAutenticado} = useContext(AuthContext)
+    const {setAutenticado, estaAutenticado} = useContext(AuthContext)
     const onPressLogin = async () => {
         const config = {
             method: "POST",
@@ -27,7 +27,6 @@ export function Login({navigation}) {
         }
         const {usuario} = await res.json()
         setAutenticado(true)
-        console.log("Aqui")
     }
     const onPressRegister = async () => {
         navigation.navigate('Cadastro', {})
@@ -36,6 +35,7 @@ export function Login({navigation}) {
      <SafeAreaView>
         <View style={style.centro}>
             <InputTexto valor={userName} onChangeText={setUserName} title="Digite o nome de usuario"/>
+            <Text>{estaAutenticado ? "Esta" : "Não Está"}</Text>
             <View style={style.buttonContainer}>
                 <Botao title="Login" onPress={onPressLogin} />
                 <Botao title="Cadastro" onPress={onPressRegister} />

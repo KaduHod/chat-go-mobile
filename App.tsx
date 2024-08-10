@@ -25,11 +25,10 @@ export const ProvedorContextoAutenticacao = ({children}: any) => {
     )
 }
 export default function App(): React.JSX.Element {
-    const { estaAutenticado } = useContext(AuthContext)
   return (
     <ProvedorContextoAutenticacao>
       <NavigationContainer>
-        { !estaAutenticado ? (<TelaDeAutenticacao />) : (<TelaDoAplicativo />) }
+        <ConteudoDoAplicativo />
        </NavigationContainer>
     </ProvedorContextoAutenticacao>
   );
@@ -39,7 +38,6 @@ const TelaDeAutenticacao = () => (
         <PilhaDeAutenticacao.Screen
             name="Login"
             component={Login}
-
         />
         <PilhaDeAutenticacao.Screen
             name="Cadastro"
@@ -56,3 +54,7 @@ const TelaDoAplicativo = () => (
         />
     </PilhaDoAplicativo.Navigator>
 )
+const ConteudoDoAplicativo = () => {
+    const { estaAutenticado, setAutenticado } = useContext(AuthContext)
+    return !estaAutenticado ? <TelaDeAutenticacao /> : <TelaDoAplicativo />
+}
