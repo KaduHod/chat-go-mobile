@@ -11,7 +11,7 @@ return (
 const style = StyleSheet.create({
     button: {
         margin: 2,
-        backgroundColor: '#007BFF', // Cor de fundo do botão
+        backgroundColor: '#ff6b6b', // Cor de fundo do botão
         paddingVertical: 15,
         paddingHorizontal: 20,
         borderRadius: 10,

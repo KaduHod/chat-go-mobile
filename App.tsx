@@ -27,9 +27,36 @@ export type UsuarioApi = {
     nome: string,
     apelido: string
 }
+export type Mensagem = {
+    id: string | number,
+    conteudo: string
+}
+export type Sala = {
+    id: string | number,
+    nome: string
+}
+export type UsuarioSala = {
+    id: string | number,
+    idusuario: string | number,
+    idsala: string | number
+}
+export type MensagemUsuarioSala = {
+    idusuario: string | number,
+    idsala: string | number,
+    idmensagem: string | number,
+}
+export type Usuario = {
+    id: string | number,
+    nome: string
+}
 export type ContextoGlobalT = {
     usuario?: UsuarioApi,
     salas?: SalaApi[]
+    listaMensagens?: Mensagem[],
+    lstaSalas?: Sala[],
+    listaUsuariosSalas?: UsuarioSala[],
+    listaUsuarios?: Usuario[],
+    listaMensagensUsuarioSala?: MensagemUsuarioSala[]
 }
 let contex: ContextoGlobalT = {}
 export const ContextoGlobal = createContext(contex);
