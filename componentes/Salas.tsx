@@ -11,13 +11,12 @@ const buscarSalas = async (usuario:UsuarioApi) => {
     const {salas} = resposta as {
         salas: SalaApi[]
     }
-    console.log({salas})
     return salas
 }
 function SalaC({sala, navigation}: {sala:SalaApi, navigation: any}) {
     const {contextoGlobal, setContextoGlobal} = useContext(ContextoGlobal)
     const onSelecionarSala = () => {
-        contextoGlobal.SAALA_SELECIONADA = sala.nome
+        contextoGlobal.SALA_SELECIONADA = sala.nome
         setContextoGlobal(contextoGlobal)
         navigation.navigate("Chat")
     }

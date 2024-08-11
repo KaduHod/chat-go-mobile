@@ -14,7 +14,12 @@ import { Cadastro } from './componentes/Cadastro';
 import { TelaInicial } from './componentes/PaginaInicial';
 import Salas from './componentes/Salas';
 import { Chat } from './componentes/Chat';
-
+import { StyleSheet } from 'react-native';
+export function generateUniqueId() {
+    const randomPart = Math.random().toString(36).substring(2, 15);
+    const timePart = Date.now().toString(36);
+    return randomPart + timePart;
+}
 const PilhaDeAutenticacao = createNativeStackNavigator();
 const PilhaDoAplicativo = createNativeStackNavigator();
 export const API_URL = "http://192.168.0.76:3000"
@@ -55,15 +60,11 @@ export type ContextoGlobalT = {
     usuario?: UsuarioApi,
     salas?: SalaApi[]
     listaMensagens?: Mensagem[],
-    lstaSalas?: Sala[],
+    listaSalas?: Sala[],
     listaUsuariosSalas?: UsuarioSala[],
     listaUsuarios?: Usuario[],
     listaMensagensUsuarioSala?: MensagemUsuarioSala[],
     SALA_SELECIONADA:string | boolean
-}
-export const getContextoGlobal = () => {
-    const [ctx, setCtx] = useContext(ContextoGlobal)
-    return [ctx as ContextoGlobalT, setCtx]
 }
 let contex: ContextoGlobalT = {
     SALA_SELECIONADA: false
@@ -129,3 +130,9 @@ const ConteudoDoAplicativo = () => {
     const { estaAutenticado, setAutenticado } = useContext(AuthContext)
     return !estaAutenticado ? <TelaDeAutenticacao /> : <TelaDoAplicativo />
 }
+export const globalStyle = StyleSheet.create({
+    debug: {
+        borderColor: 'red',  // Borda vermelha para debug
+        borderWidth: 1,
+    }
+})

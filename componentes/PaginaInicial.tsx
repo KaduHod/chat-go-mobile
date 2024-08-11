@@ -1,6 +1,6 @@
 import { useContext } from "react"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { ContextoGlobal, Sala, SalaApi, Usuario, UsuarioSala, getContextoGlobal } from "../App"
+import { ContextoGlobal, ContextoGlobalT, Sala, SalaApi, Usuario, UsuarioSala, getContextoGlobal } from "../App"
 import { Botao } from "./Botao"
 
 function generateUniqueId() {
@@ -8,7 +8,7 @@ function generateUniqueId() {
     const timePart = Date.now().toString(36);
     return randomPart + timePart;
 }
-function getRandomHexColor() {
+export function getRandomHexColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';
     for (let i = 0; i < 6; i++) {
@@ -18,56 +18,57 @@ function getRandomHexColor() {
 }
 export function TelaInicial({navigation}: any) {
     const {contextoGlobal , setContextoGlobal} = useContext(ContextoGlobal)
+    const ctxGlobal = contextoGlobal as ContextoGlobalT
     const iniciarChat = (salas: SalaApi[]) => {
         if(salas.length == 0) return
-        if(!contextoGlobal.listaSalas) {
-            contextoGlobal.listaSalas = [] as Sala[];
+        if(!ctxGlobal.listaSalas) {
+            ctxGlobal.listaSalas = [] as Sala[];
         }
         salas.forEach(s => {
             const sala: Sala = {
                 id: `sala__${s.nome}`,
                 nome: s.nome
             }
-            contextoGlobal.listaSalas.push(sala)
+            ctxGlobal.listaSalas?.push(sala)
             const salaUsuarioLogado:UsuarioSala = {
                 id: generateUniqueId(),
                 idsala: sala.id,
-                idusuario: contextoGlobal.usuario.id
+                idusuario: ctxGlobal.usuario?.id as number
             }
             const user:Usuario = {
                 cor: getRandomHexColor(),
                 id: `usuario__${generateUniqueId()}`,
-                nome: contextoGlobal.usuario.apelido
+                nome: ctxGlobal.usuario?.apelido as string
             }
-            if(!contextoGlobal.listaUsuarios) {
-                contextoGlobal.listaUsuarios = [] as Usuario[]
+            if(!ctxGlobal.listaUsuarios) {
+                ctxGlobal.listaUsuarios = [] as Usuario[]
             }
-            contextoGlobal.listaUsuarios.push(user)
-            if(!contextoGlobal.listaUsuariosSala) {
-                contextoGlobal.listaUsuariosSala = [] as UsuarioSala[]
+            ctxGlobal.listaUsuarios.push(user)
+            if(!ctxGlobal.listaUsuariosSalas) {
+                ctxGlobal.listaUsuariosSalas = [] as UsuarioSala[]
             }
-            contextoGlobal.listaUsuariosSala.push(salaUsuarioLogado)
+            ctxGlobal.listaUsuariosSalas.push(salaUsuarioLogado)
             if(!s.usuarios) {
-                setContextoGlobal(contextoGlobal)
+                setContextoGlobal(ctxGlobal)
                 return
             }
             s.usuarios.forEach(apelido => {
-                if(apelido == contextoGlobal.usuario.apelido) return
+                if(apelido == ctxGlobal.usuario?.apelido) return
                 const user:Usuario = {
                     cor: getRandomHexColor(),
                     id: `usuario__${generateUniqueId()}`,
                     nome: apelido
                 }
-                contextoGlobal.listaUsuarios.push(user)
+                ctxGlobal.listaUsuarios?.push(user)
                 const salaUser: UsuarioSala = {
                     id: generateUniqueId(),
                     idsala: sala.id,
                     idusuario: user.id
                 }
-                contextoGlobal.listaUsuariosSala.push(salaUser)
+                ctxGlobal.listaUsuariosSalas?.push(salaUser)
             })
         })
-        setContextoGlobal(contextoGlobal)
+        setContextoGlobal(ctxGlobal)
         /*Abrir conexao sse*/
     }
     const onPressSala = () => {
