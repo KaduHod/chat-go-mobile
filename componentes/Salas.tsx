@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react"
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { API_URL, ContextoGlobal, SalaApi, UsuarioApi } from "../App"
+import { API_URL, ContextoGlobal, Sala, SalaApi, UsuarioApi } from "../App"
 const buscarSalas = async (usuario:UsuarioApi) => {
     const res = await fetch(`${API_URL}/chat/${usuario.apelido}/salas`)
     if(res.status != 200) {
@@ -14,14 +14,25 @@ const buscarSalas = async (usuario:UsuarioApi) => {
     console.log({salas})
     return salas
 }
-function SalaC({sala}: {sala:SalaApi}) {
+function SalaC({sala, navigation}: {sala:SalaApi, navigation: any}) {
+    const {contextoGlobal, setContextoGlobal} = useContext(ContextoGlobal)
+    const onSelecionarSala = () => {
+        contextoGlobal.SAALA_SELECIONADA = sala.nome
+        setContextoGlobal(contextoGlobal)
+        navigation.navigate("Chat")
+    }
     return (
-        <TouchableOpacity style={[styles.sala, styles.salaVermelha]}>
+        <TouchableOpacity style={[styles.sala, styles.salaVermelha]} onPress={onSelecionarSala}>
             <Text style={styles.salaNome}>{sala.nome}</Text>
         </TouchableOpacity>
     );
 }
-export default function Salas() {
+function generateUniqueId() {
+    const randomPart = Math.random().toString(36).substring(2, 15);
+    const timePart = Date.now().toString(36);
+    return randomPart + timePart;
+}
+export default function Salas({navigation}) {
     const {contextoGlobal, setContextoGlobal} = useContext(ContextoGlobal)
     useEffect(() => {
         buscarSalas(contextoGlobal.usuario)
@@ -35,7 +46,7 @@ export default function Salas() {
         <View style={[styles.salaMainContainer]}>
             <ScrollView contentContainerStyle={[styles.scrollContent]}>
                 {contextoGlobal.salas?.map((sala:SalaApi) => (
-                    <SalaC sala={sala} />
+                    <SalaC key={generateUniqueId()} sala={sala} navigation={navigation}/>
                 ))}
             </ScrollView>
         </View>

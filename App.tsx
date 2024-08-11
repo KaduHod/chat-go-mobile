@@ -13,6 +13,7 @@ import { Login } from './componentes/Login';
 import { Cadastro } from './componentes/Cadastro';
 import { TelaInicial } from './componentes/PaginaInicial';
 import Salas from './componentes/Salas';
+import { Chat } from './componentes/Chat';
 
 const PilhaDeAutenticacao = createNativeStackNavigator();
 const PilhaDoAplicativo = createNativeStackNavigator();
@@ -47,7 +48,8 @@ export type MensagemUsuarioSala = {
 }
 export type Usuario = {
     id: string | number,
-    nome: string
+    nome: string,
+    cor: string
 }
 export type ContextoGlobalT = {
     usuario?: UsuarioApi,
@@ -56,9 +58,16 @@ export type ContextoGlobalT = {
     lstaSalas?: Sala[],
     listaUsuariosSalas?: UsuarioSala[],
     listaUsuarios?: Usuario[],
-    listaMensagensUsuarioSala?: MensagemUsuarioSala[]
+    listaMensagensUsuarioSala?: MensagemUsuarioSala[],
+    SALA_SELECIONADA:string | boolean
 }
-let contex: ContextoGlobalT = {}
+export const getContextoGlobal = () => {
+    const [ctx, setCtx] = useContext(ContextoGlobal)
+    return [ctx as ContextoGlobalT, setCtx]
+}
+let contex: ContextoGlobalT = {
+    SALA_SELECIONADA: false
+}
 export const ContextoGlobal = createContext(contex);
 const ProvedorContextoGlobal = ({children}: any) => {
     const [contextoGlobal, setContextoGlobal] = useState<ContextoGlobalT>(contex)
@@ -100,7 +109,6 @@ const TelaDeAutenticacao = () => (
         />
     </PilhaDeAutenticacao.Navigator>
 )
-
 const TelaDoAplicativo = () => (
     <PilhaDoAplicativo.Navigator>
         <PilhaDoAplicativo.Screen
@@ -110,6 +118,10 @@ const TelaDoAplicativo = () => (
         <PilhaDoAplicativo.Screen
             name="Salas"
             component={Salas}
+        />
+        <PilhaDoAplicativo.Screen
+            name="Chat"
+            component={Chat}
         />
     </PilhaDoAplicativo.Navigator>
 )

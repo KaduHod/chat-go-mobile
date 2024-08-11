@@ -3,7 +3,6 @@ import { SafeAreaView, StyleSheet, View, Text } from "react-native";
 import { Botao } from "./Botao";
 import { InputTexto } from "./InputTexto";
 import { AuthContext, ContextoGlobal } from "../App";
-
 export function Login({navigation}: any) {
     const [userName, setUserName] = useState('');
     const {setAutenticado, estaAutenticado} = useContext(AuthContext)
