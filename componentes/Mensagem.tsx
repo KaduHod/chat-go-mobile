@@ -18,7 +18,7 @@ const formatarData = (): string => {
     return `${day}/${month} ${hours}:${minutes}`;
 };
 
-export const Mensagem: React.FC<MensagemProps> = ({ id, alinhamento, mensagem, cor, remetente }) => {
+export const MensagemC: React.FC<MensagemProps> = ({ id, alinhamento, mensagem, cor, remetente }) => {
   return (
     <View id={id} style={[styles.container, styles[alinhamento]]}>
       <View style={styles.messageContent}>

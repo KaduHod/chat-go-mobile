@@ -15,6 +15,7 @@ import { TelaInicial } from './componentes/PaginaInicial';
 import Salas from './componentes/Salas';
 import { Chat } from './componentes/Chat';
 import { StyleSheet } from 'react-native';
+import EventSource from 'react-native-sse';
 export function generateUniqueId() {
     const randomPart = Math.random().toString(36).substring(2, 15);
     const timePart = Date.now().toString(36);
@@ -35,7 +36,9 @@ export type UsuarioApi = {
 }
 export type Mensagem = {
     id: string | number,
-    conteudo: string
+    conteudo: string,
+    sala: string,
+    remetente: string
 }
 export type Sala = {
     id: string | number,
@@ -64,7 +67,8 @@ export type ContextoGlobalT = {
     listaUsuariosSalas?: UsuarioSala[],
     listaUsuarios?: Usuario[],
     listaMensagensUsuarioSala?: MensagemUsuarioSala[],
-    SALA_SELECIONADA:string | boolean
+    SALA_SELECIONADA:string | boolean,
+    sse: EventSource | null,
 }
 let contex: ContextoGlobalT = {
     SALA_SELECIONADA: false
