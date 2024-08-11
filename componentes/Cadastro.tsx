@@ -4,7 +4,7 @@ import { InputTexto } from "./InputTexto";
 import { useContext, useState } from "react";
 import { AuthContext } from "../App";
 
-export function Cadastro({navigation}) {
+export function Cadastro({navigation}: any) {
     const [nomeCompleto, setNomeCompleto] = useState('')
     const [apelido, setApelido] = useState('')
     const {setAutenticado} = useContext(AuthContext)
@@ -23,7 +23,6 @@ export function Cadastro({navigation}) {
             const resJson = await res.json()
             const {usuario} = resJson
             setAutenticado(true)
-            console.log({usuario})
         } catch (error) {
             console.log({error})
         }
