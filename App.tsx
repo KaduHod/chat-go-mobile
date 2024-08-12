@@ -9,13 +9,9 @@ import React, { createContext ,useContext,useState } from 'react';
 //import ReactWelcome from './componentes/ReactWelcome';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Login } from './componentes/Login';
-import { Cadastro } from './componentes/Cadastro';
-import { TelaInicial } from './componentes/PaginaInicial';
-import Salas from './componentes/Salas';
-import { Chat } from './componentes/Chat';
 import { StyleSheet } from 'react-native';
 import EventSource from 'react-native-sse';
+import Salas, { Cadastro, Chat, Login, TelaInicial } from './componentes/Index';
 export function generateUniqueId() {
     const randomPart = Math.random().toString(36).substring(2, 15);
     const timePart = Date.now().toString(36);
