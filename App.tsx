@@ -1,17 +1,9 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React, { createContext ,useContext,useState } from 'react';
-//import ReactWelcome from './componentes/ReactWelcome';
+import React, { createContext ,useContext,useEffect,useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 import EventSource from 'react-native-sse';
-import Salas, { Cadastro, Chat, Login, TelaInicial } from './componentes/Index';
+import { Salas, Cadastro, Chat, Login, TelaInicial } from './componentes/Index';
 export function generateUniqueId() {
     const randomPart = Math.random().toString(36).substring(2, 15);
     const timePart = Date.now().toString(36);
@@ -67,11 +59,37 @@ export type ContextoGlobalT = {
     sse: EventSource | null,
 }
 let contex: ContextoGlobalT = {
-    SALA_SELECIONADA: false
+    SALA_SELECIONADA: false,
+    salas: [],
+    listaMensagens: [],
+    listaSalas: [],
+    listaUsuariosSalas: [],
+    listaUsuarios: [],
+    listaMensagensUsuarioSala: [],
+    sse: null,
 }
-export const ContextoGlobal = createContext(contex);
+export const ContextoSSE = createContext<{sse:EventSource | null}>({sse: null});
+export const ProvedorContextoSSE = ({children}: any) => {
+    const [contextoSSE, setContextoSSE] = useState<EventSource | null>(ContextoSSE)
+    useEffect(() => {
+        if(contextoSSE.sse && contextoSSE.sse.close) {
+            contextoSSE.close()
+        }
+    }, [contextoSSE])
+    return (
+        <ContextoSSE.Provider value={{ contextoSSE, setContextoSSE }}>
+            {children}
+        </ContextoSSE.Provider>
+    )
+}
+export const ContextoGlobal = createContext<ContextoGlobalT>(contex);
 const ProvedorContextoGlobal = ({children}: any) => {
-    const [contextoGlobal, setContextoGlobal] = useState<ContextoGlobalT>(contex)
+    const [contextoGlobal, setContextoGlobal] = useState(ContextoGlobal)
+    useEffect(() => {
+        if(contextoGlobal.sse) {
+            contextoGlobal.sse?.close()
+        }
+    }, [contextoGlobal.sse])
     return (
         <ContextoGlobal.Provider value={{ contextoGlobal, setContextoGlobal }}>
             {children}
@@ -89,13 +107,15 @@ export const ProvedorContextoAutenticacao = ({children}: any) => {
 }
 export default function App(): React.JSX.Element {
   return (
-  <ProvedorContextoGlobal>
-    <ProvedorContextoAutenticacao>
-      <NavigationContainer>
-        <ConteudoDoAplicativo />
-       </NavigationContainer>
-    </ProvedorContextoAutenticacao>
-  </ProvedorContextoGlobal>
+  <ProvedorContextoSSE>
+      <ProvedorContextoGlobal>
+        <ProvedorContextoAutenticacao>
+          <NavigationContainer>
+            <ConteudoDoAplicativo />
+           </NavigationContainer>
+        </ProvedorContextoAutenticacao>
+      </ProvedorContextoGlobal>
+  </ProvedorContextoSSE>
   );
 }
 const TelaDeAutenticacao = () => (

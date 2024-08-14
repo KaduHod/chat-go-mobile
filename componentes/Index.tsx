@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
-import { API_URL, AuthContext, ContextoGlobal, Mensagem, Sala, SalaApi, Usuario, UsuarioApi, UsuarioSala, ContextoGlobalT } from "../App"
+import { API_URL, AuthContext, ContextoGlobal, Mensagem, Sala, SalaApi, Usuario, UsuarioApi, UsuarioSala, ContextoGlobalT, ContextoSSE } from "../App"
 import EventSource from "react-native-sse"
 export function Botao({title, onPress}:any) {
     return (
@@ -53,6 +53,7 @@ export function Login({navigation}: any) {
     const [userName, setUserName] = useState('');
     const {setAutenticado, estaAutenticado} = useContext(AuthContext)
     const {contextoGlobal, setContextoGlobal} = useContext(ContextoGlobal)
+    const {contextoSSE, setContextoSSE} = useContext(ContextoSSE)
     const onPressLogin = async () => {
         const config = {
             method: "POST",
@@ -73,6 +74,33 @@ export function Login({navigation}: any) {
         }
         const {usuario} = await res.json()
         contextoGlobal.usuario = usuario
+        contextoSSE.sse = new EventSource(`${API_URL}/sse/${usuario.apelido}`);
+        setContextoSSE(contextoSSE)
+        /*if(!contextoSSE.eventHandlers || !contextoSSE.eventHandlers['close']) {
+            contextoSSE.addEventListener('close', () => {
+                console.log("Conexao fechada, tentando reabrir!")
+                contextoSSE = new EventSource(`${API_URL}/sse/${usuario.apelido}`)
+                setContextoSSE(contextoSSE)
+            })
+        }*/
+        if(!contextoSSE.sse.eventHandlers['chat-nova-mensagem']) {
+            contextoSSE.sse.addEventListener('chat-nova-mensagem', (e:any) => {
+                const json = JSON.parse(e.data).conteudo
+                const msg: Mensagem = {
+                    id: generateUniqueId(),
+                    conteudo: json.mensagem,
+                    remetente: json.remetente,
+                    sala: json.sala
+                }
+                if(!contextoGlobal.listaMensagens) {
+                    contextoGlobal.listaMensagens = [];
+                    setContextoGlobal(contextoGlobal)
+                }
+                contextoGlobal.listaMensagens.push(msg)
+                setContextoGlobal({...contextoGlobal})
+            })
+        }
+        setContextoSSE(contextoSSE)
         setContextoGlobal(contextoGlobal)
         setAutenticado(true)
     }
@@ -93,31 +121,16 @@ export function Login({navigation}: any) {
 }
 export function Chat({navigation}: any) {
     const {contextoGlobal, setContextoGlobal}:any = useContext(ContextoGlobal)
-    const [mensagens, setMensagens] = useState<Mensagem[]>([])
     useEffect(() => {
-        const handleNovaMensagem = (e: any) => {
-            const { sala, remetente, mensagem } = JSON.parse(e.data).conteudo;
-            const novaMensagem: Mensagem = {
-                id: generateUniqueId(),
-                conteudo: mensagem,
-                sala,
-                remetente,
-            };
-            console.log({ novaMensagem });
-            setMensagens((prevMensagens) => [...prevMensagens, novaMensagem]);
-        };
-        contextoGlobal.sse.addEventListener('chat-nova-mensagem', handleNovaMensagem)
-        return () => {
-            contextoGlobal.sse.removeEventListener('chat-nova-mensagem')
-        }
-    }, [contextoGlobal.sse])
+        //setMensagens([...contextoGlobal.listaMensagens]);
+    }, [contextoGlobal.listaMensagens]);
     return (
         <View style={[styles.mainContainer, styles.debug]}>
             <View style={styles.tituloWrapper}>
                 <Titulo>{contextoGlobal.SALA_SELECIONADA}</Titulo>
             </View>
             <ScrollView style={[styles.containerMensagens]}>
-                {mensagens.map(mensagem => {
+                {contextoGlobal.listaMensagens?.map(mensagem => {
                     return <MensagemC
                         key={mensagem.id}
                         id={generateUniqueId()}
@@ -178,7 +191,17 @@ export function getRandomHexColor() {
 }
 
 export function TelaInicial({navigation}: any) {
-    const {contextoGlobal , setContextoGlobal} = useContext(ContextoGlobal)
+    const {contextoGlobal , setContextoGlobal} = useContext<ContextoGlobalT>(ContextoGlobal)
+    useEffect(() => {
+        buscarSalas(contextoGlobal.usuario)
+        .then((salas?:SalaApi[]) => {
+            if(!salas) return
+            contextoGlobal.salas = salas
+            setContextoGlobal(contextoGlobal)
+            iniciarChat(contextoGlobal, setContextoGlobal)
+        })
+    }, [contextoGlobal.usuario])
+
     const ctxGlobal = contextoGlobal as ContextoGlobalT
         const onPressSala = () => {
         navigation.navigate('Salas')
@@ -192,7 +215,6 @@ export function TelaInicial({navigation}: any) {
 const buscarSalas = async (usuario:UsuarioApi) => {
     const res = await fetch(`${API_URL}/chat/${usuario.apelido}/salas`)
     if(res.status != 200) {
-        console.log({res}, "Erro ao buscar salas de usuarios")
         return
     }
     const resposta = await res.json();
@@ -208,7 +230,6 @@ function SalaC({sala, navigation}: {sala:SalaApi, navigation: any}) {
         contextoGlobal.SALA_SELECIONADA = sala.nome
         setContextoGlobal(contextoGlobal)
         const res = await entrarEmSala(contextoGlobal.usuario.apelido, sala.nome)
-        console.log({res})
         navigation.navigate("Chat")
     }
     return (
@@ -223,7 +244,7 @@ function generateUniqueId() {
     return randomPart + timePart;
 }
 
-const iniciarChat = (ctxGlobal: ContextoGlobalT, setContextoGlobal:any) => {
+function iniciarChat (ctxGlobal: ContextoGlobalT, setContextoGlobal:any) {
     const salas = ctxGlobal.salas
     if(!salas) return console.log("Sem salas para inicar chat")
     if(salas.length == 0) return
@@ -275,26 +296,15 @@ const iniciarChat = (ctxGlobal: ContextoGlobalT, setContextoGlobal:any) => {
         })
     })
     setContextoGlobal(ctxGlobal)
-    if(ctxGlobal.sse) return
-    ctxGlobal.sse = new EventSource(`${API_URL}/sse/${ctxGlobal.usuario?.apelido}`)
-    setContextoGlobal(ctxGlobal)
     /*Abrir conexao sse*/
 }
-export default function Salas({navigation}) {
-    const {contextoGlobal, setContextoGlobal} = useContext(ContextoGlobal)
-    useEffect(() => {
-        buscarSalas(contextoGlobal.usuario)
-        .then((salas?:SalaApi[]) => {
-            if(!salas) return
-            contextoGlobal.salas = salas
-            setContextoGlobal(contextoGlobal)
-            iniciarChat(contextoGlobal, setContextoGlobal)
-        })
-    }, [contextoGlobal.usuario])
+export function Salas({navigation}) {
+    const {contextoGlobal, setContextoGlobal} = useContext<ContextoGlobalT>(ContextoGlobal)
+    const [salas, setSalas] = useState<SalaApi[]>(contextoGlobal.salas);
     return (
         <View style={[styles.salaMainContainer]}>
             <ScrollView contentContainerStyle={[styles.scrollContent]}>
-                {contextoGlobal.salas?.map((sala:SalaApi) => (
+                {salas.map((sala:SalaApi) => (
                     <SalaC key={generateUniqueId()} sala={sala} navigation={navigation}/>
                 ))}
             </ScrollView>
