@@ -114,6 +114,12 @@ export function Login({navigation}: any) {
 }
 export function Chat({navigation}: any) {
     const {contextoGlobal, setContextoGlobal}:any = useContext(ContextoGlobal)
+    const [mensagemV, setMensagemV] = useState("");
+    const onPressEnviarMensagem = () => {
+        const url = `${API_URL}/chat/sse/${contextoGlobal.usuario.apelido}/sala/${contextoGlobal.SALA_SELECIONADA}/enviar?msg=${mensagemV}`
+        fetch(url, {method:"POST"})
+        setMensagemV("")
+    }
     useEffect(() => {
         //setMensagens([...contextoGlobal.listaMensagens]);
     }, [contextoGlobal.listaMensagens]);
@@ -124,19 +130,20 @@ export function Chat({navigation}: any) {
             </View>
             <ScrollView style={[styles.containerMensagens]}>
                 {contextoGlobal.listaMensagens?.filter(mensagem => contextoGlobal.SALA_SELECIONADA == mensagem.sala).map(mensagem => {
+                    const alinhamento =  mensagem.remetente == contextoGlobal.usuario.apelido ? "direita" : "esquerda" ;
                     return <MensagemC
                         key={mensagem.id}
                         id={generateUniqueId()}
-                        alinhamento="direita"
-                        cor="#f6f7f8"
+                        alinhamento={alinhamento}
+                        cor="black"
                         remetente={mensagem.remetente}
                         mensagem={mensagem.conteudo}
                     />
                 })}
             </ScrollView>
             <View style={[styles.debug, styles.containerBotoes]}>
-                <View></View>
-                <Botao title="Enviar" onPress={() => console.log("Enviar mensagem")} />
+                <InputTexto valor={mensagemV} onChangeText={setMensagemV} title="..."/>
+                <Botao title="Enviar" onPress={onPressEnviarMensagem} />
             </View>
         </View>
     )
@@ -239,6 +246,7 @@ function generateUniqueId() {
 
 function iniciarChat (ctxGlobal: ContextoGlobalT, setContextoGlobal:any) {
     const salas = ctxGlobal.salas
+    console.log("Atualizando")
     if(!salas) return console.log("Sem salas para inicar chat")
     if(salas.length == 0) return
     if(!ctxGlobal.listaSalas) {
@@ -291,11 +299,17 @@ function iniciarChat (ctxGlobal: ContextoGlobalT, setContextoGlobal:any) {
     setContextoGlobal(ctxGlobal)
     /*Abrir conexao sse*/
 }
+const Separador = () => {
+    return (
+        <View style={styles.linha} />
+    )
+}
 export function Salas({navigation}) {
     const {contextoGlobal, setContextoGlobal} = useContext<ContextoGlobalT>(ContextoGlobal)
     const [salas, setSalas] = useState<SalaApi[]>(contextoGlobal.salas);
     return (
         <View style={[styles.salaMainContainer]}>
+            <Separador />
             <ScrollView contentContainerStyle={[styles.scrollContent]}>
                 {salas.map((sala:SalaApi) => (
                     <SalaC key={generateUniqueId()} sala={sala} navigation={navigation}/>
@@ -333,7 +347,9 @@ const styles = StyleSheet.create({
     centro:  {
         padding: 10,
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
+        width: '100%',
+        marginTop: 15
     },
     tituloWrapper: {
         alignItems:"center"
@@ -354,7 +370,8 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 50,
-        width: 300,
+        minHeight: 50,
+        flex: 1,
         borderColor: '#ddd',
         borderWidth: 1,
         borderRadius: 10,
@@ -447,4 +464,9 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: '600',
     },
+    linha: {
+        height:1,
+        width:'100%',
+        backgroundColor:'black'
+    }
 })
