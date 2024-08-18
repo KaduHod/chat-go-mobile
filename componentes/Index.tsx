@@ -76,13 +76,6 @@ export function Login({navigation}: any) {
         contextoGlobal.usuario = usuario
         contextoSSE.sse = new EventSource(`${API_URL}/sse/${usuario.apelido}`);
         setContextoSSE(contextoSSE)
-        /*if(!contextoSSE.eventHandlers || !contextoSSE.eventHandlers['close']) {
-            contextoSSE.addEventListener('close', () => {
-                console.log("Conexao fechada, tentando reabrir!")
-                contextoSSE = new EventSource(`${API_URL}/sse/${usuario.apelido}`)
-                setContextoSSE(contextoSSE)
-            })
-        }*/
         if(!contextoSSE.sse.eventHandlers['chat-nova-mensagem']) {
             contextoSSE.sse.addEventListener('chat-nova-mensagem', (e:any) => {
                 const json = JSON.parse(e.data).conteudo
@@ -130,7 +123,7 @@ export function Chat({navigation}: any) {
                 <Titulo>{contextoGlobal.SALA_SELECIONADA}</Titulo>
             </View>
             <ScrollView style={[styles.containerMensagens]}>
-                {contextoGlobal.listaMensagens?.map(mensagem => {
+                {contextoGlobal.listaMensagens?.filter(mensagem => contextoGlobal.SALA_SELECIONADA == mensagem.sala).map(mensagem => {
                     return <MensagemC
                         key={mensagem.id}
                         id={generateUniqueId()}

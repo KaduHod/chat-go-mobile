@@ -75,7 +75,7 @@ export const ProvedorContextoSSE = ({children}: any) => {
         if(contextoSSE.sse && contextoSSE.sse.close) {
             contextoSSE.close()
         }
-    }, [contextoSSE])
+    }, [contextoSSE.sse])
     return (
         <ContextoSSE.Provider value={{ contextoSSE, setContextoSSE }}>
             {children}
